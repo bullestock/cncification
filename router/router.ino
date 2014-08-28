@@ -53,6 +53,7 @@ void doDelay(double us)
 }
 
 int n = 0;
+int ledState = LOW;
 
 void loop()
 {
@@ -64,19 +65,24 @@ void loop()
 
     // switchPosition will be 0-11
     int switchPosition = (analogRead(ROTARY_SWITCH) + ROTARY_SWITCH_STEP/2)/ROTARY_SWITCH_STEP;
-    double del = 5000 + pow(3.2938, switchPosition);
+    double del = 500 + pow(2.5, switchPosition);
     int x = analogRead(X_SWITCH);
     if (n == 0)
     {
+        digitalWrite(INTERNAL_LED, ledState);
+        ledState = !ledState;
+#if 0
         Serial.print("R ");
         Serial.print(switchPosition);
         Serial.print(" del ");
         Serial.print(del);
         Serial.print(" X ");
         Serial.println(x);
+        delay(50);
+#endif
     }
     ++n;
-    if (n > 1000)
+    if (n > 500)
         n = 0;
     if ((x < ANALOG_LOW) || (x > ANALOG_HIGH))
     {
@@ -90,9 +96,6 @@ void loop()
         digitalWrite(STEP2, HIGH);
     }
 
-    if ((x < ANALOG_LOW) || (x > ANALOG_HIGH) ||
-        (y < ANALOG_LOW) || (y > ANALOG_HIGH))
-        digitalWrite(INTERNAL_LED, HIGH);
     
     doDelay(del);
 
@@ -101,10 +104,6 @@ void loop()
 
     if ((y < ANALOG_LOW) || (y > ANALOG_HIGH))
         digitalWrite(STEP2, LOW); 
-
-    if ((x < ANALOG_LOW) || (x > ANALOG_HIGH) ||
-        (y < ANALOG_LOW) || (y > ANALOG_HIGH))
-        digitalWrite(INTERNAL_LED, LOW);
 
     doDelay(del);
 }
