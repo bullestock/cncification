@@ -1,5 +1,7 @@
 // Stepper controller for router
 
+
+// Pin definitions
 int N_ENABLE = 9;
 int STEP1 = 8;
 int DIR1 = 7;
@@ -14,8 +16,13 @@ int X_SWITCH = A2;
 int Y_SWITCH = A1;
 int ROTARY_SWITCH_STEP = 1023/11;
 
+// When toggle switch value is below this, we assume it is in the 'down' position
 int ANALOG_LOW = 400;
+// When toggle switch value is above this, we assume it is in the 'up' position
 int ANALOG_HIGH = 600;
+
+// After this number of iterations where no switch is active, disable the stepper drivers
+int MAX_IDLE_TIME = 5000;
 
 void setup()
 {                
@@ -54,6 +61,7 @@ void doDelay(double us)
 
 int n = 0;
 int ledState = LOW;
+int idleTime = 0;
 
 void loop()
 {
@@ -67,6 +75,7 @@ void loop()
     int switchPosition = (analogRead(ROTARY_SWITCH) + ROTARY_SWITCH_STEP/2)/ROTARY_SWITCH_STEP;
     double del = 500 + pow(2.5, switchPosition);
     int x = analogRead(X_SWITCH);
+    int y = analogRead(Y_SWITCH);
     if (n == 0)
     {
         digitalWrite(INTERNAL_LED, ledState);
@@ -77,7 +86,9 @@ void loop()
         Serial.print(" del ");
         Serial.print(del);
         Serial.print(" X ");
-        Serial.println(x);
+        Serial.print(x);
+        Serial.print(" Y ");
+        Serial.println(y);
         delay(50);
 #endif
     }
@@ -86,16 +97,20 @@ void loop()
         n = 0;
     if ((x < ANALOG_LOW) || (x > ANALOG_HIGH))
     {
+        digitalWrite(N_ENABLE, LOW);
         digitalWrite(DIR1, x < ANALOG_LOW);
         digitalWrite(STEP1, HIGH);
+        idleTime = 0;
     }
-    int y = analogRead(Y_SWITCH);
     if ((y < ANALOG_LOW) || (y > ANALOG_HIGH))
     {
+        digitalWrite(N_ENABLE, LOW);
         digitalWrite(DIR2, y < ANALOG_LOW);
         digitalWrite(STEP2, HIGH);
+        idleTime = 0;
     }
-
+    if (++idleTime > MAX_IDLE_TIME)
+        digitalWrite(N_ENABLE, HIGH);
     
     doDelay(del);
 
