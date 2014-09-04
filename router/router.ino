@@ -21,7 +21,7 @@ int ANALOG_LOW = 400;
 // When toggle switch value is above this, we assume it is in the 'up' position
 int ANALOG_HIGH = 600;
 
-// After this number of iterations where no switch is active, disable the stepper drivers
+// After this number of ms where no switch is active, disable the stepper drivers
 int MAX_IDLE_TIME = 5000;
 
 void setup()
@@ -62,6 +62,7 @@ void doDelay(double us)
 int n = 0;
 int ledState = LOW;
 int idleTime = 0;
+unsigned long lastActiveTick = 0;
 
 void loop()
 {
@@ -73,7 +74,7 @@ void loop()
 
     // switchPosition will be 0-11
     int switchPosition = (analogRead(ROTARY_SWITCH) + ROTARY_SWITCH_STEP/2)/ROTARY_SWITCH_STEP;
-    double del = 500 + pow(2.5, switchPosition);
+    double del = 600 + pow(2.5, switchPosition);
     int x = analogRead(X_SWITCH);
     int y = analogRead(Y_SWITCH);
     if (n == 0)
@@ -97,20 +98,26 @@ void loop()
         n = 0;
     if ((x < ANALOG_LOW) || (x > ANALOG_HIGH))
     {
+        digitalWrite(N_RESET, HIGH);
         digitalWrite(N_ENABLE, LOW);
         digitalWrite(DIR1, x < ANALOG_LOW);
         digitalWrite(STEP1, HIGH);
-        idleTime = 0;
+        lastActiveTick = millis();
     }
     if ((y < ANALOG_LOW) || (y > ANALOG_HIGH))
     {
+        digitalWrite(N_RESET, HIGH);
         digitalWrite(N_ENABLE, LOW);
         digitalWrite(DIR2, y < ANALOG_LOW);
         digitalWrite(STEP2, HIGH);
-        idleTime = 0;
+        lastActiveTick = millis();
     }
+    unsigned long idleTime = millis() - lastActiveTick;
     if (++idleTime > MAX_IDLE_TIME)
+    {
         digitalWrite(N_ENABLE, HIGH);
+        digitalWrite(N_RESET, LOW);
+    }
     
     doDelay(del);
 
