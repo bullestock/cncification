@@ -1,9 +1,6 @@
 
 slop = 0.2; // amount need to increase hole ID to compensate printer effects 
 
-KBOD = 50.00+slop; // knob OD is surprisingly precise
-MHOD = 5.90+slop; // tight fit for M6 screw holding spinner knob on handle
-RMH = 20.0;  // radial offset of mounting hole
 HTH = 2; // thickness of shell around handle
 HH = 5; // total height of handle shell
 eps = 0.03; // small number
@@ -74,33 +71,33 @@ shoff = pulley_t_ht+retainer_ht*2+eps;  // Z offset of handle shell above pulley
 
 module knob() {
  difference() {
-  translate([0,0,-1-eps]) cylinder(r=KBOD/2, h=1+1+8, $fn=50);  // body of knob
+  translate([0,0,-1-eps]) cylinder(r=24, h=1+1+8, $fn=50);  // body of knob
  }
 }
 
 routerShaftDiameter = 10;
 notchWidth = 4;
 notchDepth = 2.5;
+KBOD = 50.00+slop; // knob OD is surprisingly precise
 
 // shell with embedded pulley that fits around 50mm knob/handle
 module shell() {
     difference() {
         union() {
             // Narrow rim
-            //!!translate([0,0,-1]) cylinder(r=retainer_ht+KBOD/2+HTH,h=1, $fn=50);
+            translate([0, 0, -1]) cylinder(r=retainer_ht+KBOD/2+HTH,h=1, $fn=50);
             // Wide rim
-            //!!translate([0,0,shoff+.44]) cylinder(r=retainer_ht+KBOD/2+HTH, h=1, $fn=50); // handle shell body
-            pulley("GT2 2mm" , GT2_2mm_pulley_dia , 0.764 , 1.494 );  // GT2 pulley
+            translate([0, 0, shoff+.44]) cylinder(r=retainer_ht+KBOD/2+HTH, h=1, $fn=50); // handle shell body
+            pulley("GT2 2mm", GT2_2mm_pulley_dia, 0.764, 1.494);  // GT2 pulley
         }
         // Hole
         knob();
         // Axle hole
-        translate([0, 0, 5])
-           union() {
-               cylinder(r = routerShaftDiameter/2, h = 10);
-               translate([routerShaftDiameter/2 - 0.5, -notchWidth/2, 0])
-                  cube([notchDepth - 0.5, notchWidth, 100]);
-           }
+        translate([0, 0, 5]) union() {
+            cylinder(r = routerShaftDiameter/2+0.1, h = 10);
+            translate([routerShaftDiameter/2 - 0.5, -notchWidth/2, 0])
+            cube([notchDepth + 0.5, notchWidth, 100]);
+        }
     }
 }
 
