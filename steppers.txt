@@ -1,0 +1,12 @@
+KH42
+1.8 degree/step
+Unipolar
+20 ohm/phase
+14/236 mN/m (2.1/33 oz/in)
+9 V
+
+TS3103
+41 oz/in
+
+Phase 1: white/black
+Phase 2: red/blue
